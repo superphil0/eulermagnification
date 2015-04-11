@@ -1,8 +1,8 @@
 %% params
-alpha = 0;
-lowCutoff = 1/100;
-highCutoff = 1/10;
-lambdaC = 0;
+alpha = 10;
+lowCutoff = 50/60;
+highCutoff = 60/60;
+lambdaC = 16;
 filename = 'face.mp4';
 
 %% read file
@@ -26,7 +26,7 @@ end
 
 %% magnify motion
 
-framesOut = lpiir(frames, alphga, lamdaC, lowCutoff, highCutoff);
+framesOut = lpiir(frames, alpha, lambdaC, lowCutoff, highCutoff);
 
 %% save video file
 outName = 'out';
@@ -38,7 +38,7 @@ open(vidOut)
 for i=startIndex:endIndex
     % Convert YIC to RGB color space
     rgbframe = ntsc2rgb(frames(:,:,:,i));
-    
+    progmeter(i,endIndex);
     % Clamp values to [0,1]
     rgbframe(rgbframe < 0) = 0;
     rgbframe(rgbframe > 1) = 1;
@@ -46,5 +46,5 @@ for i=startIndex:endIndex
     writeVideo(vidOut, im2uint8(rgbframe));
 end
 close(vidOut);
-
+disp('wrote video file');
 % TODO make videos  baby and deadface

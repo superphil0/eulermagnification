@@ -13,5 +13,5 @@ function [ image ] = reconstructPyramid( levels , sizes )
         prevGauss = L + gauss;
     end
     
-    image = prevGauss;
+    image = uint8(prevGauss);
 end

@@ -5,11 +5,11 @@ function [ levels, sizes ] = buildPyramid( image  )
     kernel = kernel/ sum(sum(kernel));
 
 
-    currentG = int16(image);
+    currentG = image; %assume image is of type double
     % filter and downsample
     nextG =  imresize(imfilter(currentG, kernel, 'replicate'),0.5,'nearest');
     % upsample and subtract
-    currentL = currentG - imresize(nextG, size(currentG),'nearest');
+    currentL = currentG - imresize(nextG, size(currentG),'method','nearest');
      currentG = nextG;
     levels = currentL;
   

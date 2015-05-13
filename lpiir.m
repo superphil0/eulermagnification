@@ -12,6 +12,7 @@ for j = 1:3
 end
 lowpass1 = pyramid;
 lowpass2 = pyramid;
+tmp = pyramid;
 
 for i = 2:numFrames
     progmeter(i,numFrames);
@@ -47,9 +48,9 @@ for i = 2:numFrames
     end
     frame = zeros(size(framesIn(:,:,:,i)));
 
-    frame(:,:,1) = reconstructPyramid(filtered(:,:,1),sizes);
-    frame(:,:,2) = reconstructPyramid(filtered(:,:,2),sizes);
-    frame(:,:,3) = reconstructPyramid(filtered(:,:,3),sizes);
+    frame(:,:,1) = reconstructPyramid(tmp(:,:,1),sizes);
+    frame(:,:,2) = reconstructPyramid(tmp(:,:,2),sizes);
+    frame(:,:,3) = reconstructPyramid(tmp(:,:,3),sizes);
     
     framesOut(:,:,:,i) = frame;    
 end

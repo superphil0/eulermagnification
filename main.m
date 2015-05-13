@@ -9,7 +9,7 @@ filename = 'face.mp4';
 
 vidIn = VideoReader(filename);
 startIndex = 1;
-endIndex = vidIn.NumberOfFrames;
+endIndex = 100%vidIn.NumberOfFrames;
 nChannels = 3;
 temp = struct('cdata', ...
 		  zeros(vidIn.Height, vidIn.Width, nChannels, 'uint8'), ...
@@ -20,11 +20,12 @@ for i=startIndex:endIndex
     temp.cdata = read(vidIn, i);
     [rgbframe,~] = frame2im(temp);
     rgbframe = im2double(rgbframe);
+    % Convert RGB to YIC color space
     frame = rgb2ntsc(rgbframe);
     frames(:,:,:,i) = frame;
 end
 
-%% magnify motion
+%% magnify motion (all operations work on YIC-double image pyramid frames)
 
 framesOut = lpiir(frames, alpha, lambdaC, lowCutoff, highCutoff);
 
@@ -37,14 +38,13 @@ open(vidOut)
 
 for i=startIndex:endIndex
     % Convert YIC to RGB color space
-    rgbframe = ntsc2rgb(frames(:,:,:,i));
+    rgbframe = ntsc2rgb(framesOut(:,:,:,i));
     progmeter(i,endIndex);
     % Clamp values to [0,1]
     rgbframe(rgbframe < 0) = 0;
     rgbframe(rgbframe > 1) = 1;
     
-    writeVideo(vidOut, im2uint8(rgbframe));
+    writeVideo(vidOut, rgbframe);
 end
 close(vidOut);
 disp('wrote video file');
-% TODO make videos  baby and deadface

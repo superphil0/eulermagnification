@@ -1,15 +1,19 @@
 %% params
 alpha = 10;
-lowCutoff = 50/60;
-highCutoff = 60/60;
+lowCutoff = 0.4;
+highCutoff = 0.05;
 lambdaC = 16;
-filename = 'face.mp4';
+chromAtt = 0.1;
+filename = 'wrist.mp4';
+
+% TODO explain params, give some examples
+% TODO motion magnification only inside a mask?
 
 %% read file
 
 vidIn = VideoReader(filename);
 startIndex = 1;
-endIndex = 100%vidIn.NumberOfFrames;
+endIndex = vidIn.NumberOfFrames;
 nChannels = 3;
 temp = struct('cdata', ...
 		  zeros(vidIn.Height, vidIn.Width, nChannels, 'uint8'), ...
@@ -27,7 +31,7 @@ end
 
 %% magnify motion (all operations work on YIC-double image pyramid frames)
 
-framesOut = lpiir(frames, alpha, lambdaC, lowCutoff, highCutoff);
+framesOut = lpiir(frames, alpha, lambdaC, lowCutoff, highCutoff, chromAtt);
 
 %% save video file
 outName = 'out';

@@ -2,10 +2,10 @@
 alpha = 10;
 lowCutoff = 0.4;
 highCutoff = 0.05;
-lambdaC = 16;
+lambdaC = 10;
 chromAtt = 0.1;
-filename = 'wrist.mp4';
-
+filename = 'guitar.mp4';
+exaggerationFactor = 8;
 % TODO explain params, give some examples
 % TODO motion magnification only inside a mask?
 
@@ -20,6 +20,12 @@ temp = struct('cdata', ...
 		  'colormap', []);
       
 frames = zeros(vidIn.Height, vidIn.Width, nChannels, endIndex);
+
+temp.cdata = read(vidIn, 1);
+[rgbframe,~] = frame2im(temp);
+imshow(rgbframe)
+rect = getrect;
+%%
 for i=startIndex:endIndex
     temp.cdata = read(vidIn, i);
     [rgbframe,~] = frame2im(temp);
@@ -30,8 +36,8 @@ for i=startIndex:endIndex
 end
 
 %% magnify motion (all operations work on YIC-double image pyramid frames)
-
-framesOut = lpiir(frames, alpha, lambdaC, lowCutoff, highCutoff, chromAtt);
+magnifyArea = frames(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:,:);
+framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor);
 
 %% save video file
 outName = 'out';
@@ -47,7 +53,9 @@ for i=startIndex:endIndex
     % Clamp values to [0,1]
     rgbframe(rgbframe < 0) = 0;
     rgbframe(rgbframe > 1) = 1;
-    
+    fr = ntsc2rgb(frames(:,:,:,i));
+    fr(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:)=rgbframe;
+    rgbframe = fr;
     writeVideo(vidOut, rgbframe);
 end
 close(vidOut);

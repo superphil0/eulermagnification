@@ -1,4 +1,4 @@
-function [ framesOut ] = lpiir( framesIn, alpha, lambdaC, lowCutoff, highCutoff, chromAtt )
+function [ framesOut ] = lpiir( framesIn, alpha, lambdaC, lowCutoff, highCutoff, chromAtt,exagerationFactor )
 %LPIIR
 % Spatial Filtering: Laplacian pyramid
 % Temporal Filtering: substraction of two IIR lowpass filters
@@ -40,7 +40,7 @@ for i = 2:numFrames
     for j = 1:pyramidLevels %bottom up
         % compute modified alpha for this level
         currAlpha = lambda/delta/8 - 1;
-        currAlpha = currAlpha*2; %exaggerate for visualisation %TODO as param
+        currAlpha = currAlpha*exagerationFactor; %exaggerate for visualisation %TODO as param
         
         % indices of current pyramid level
         if i < 2 || i > 7

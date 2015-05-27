@@ -2,12 +2,10 @@
 alpha = 10;
 lowCutoff = 0.4;
 highCutoff = 0.05;
-lambdaC = 10;
+lambdaC = 16;
 chromAtt = 0.1;
-filename = 'guitar.mp4';
+filename = 'wrist.mp4';
 exaggerationFactor = 8;
-% TODO explain params, give some examples
-% TODO motion magnification only inside a mask?
 
 %% read file
 
@@ -24,7 +22,7 @@ frames = zeros(vidIn.Height, vidIn.Width, nChannels, endIndex);
 temp.cdata = read(vidIn, 1);
 [rgbframe,~] = frame2im(temp);
 imshow(rgbframe)
-rect = getrect;
+rect = uint16(getrect);
 %%
 for i=startIndex:endIndex
     temp.cdata = read(vidIn, i);

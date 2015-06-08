@@ -1,8 +1,7 @@
-function progmeter(i,n,w)
-
-if nargin<3, 
-    w = 1;
-end
+function progmeter(i,n)
+% Displays percentage of progression
+% i     current step
+% n     number of steps
 
 if i==0    
     fwrite(1,sprintf('00%%'));
@@ -13,7 +12,7 @@ elseif ischar(i)
     return;
 end
 
-if mod(i,w*n/100) <= mod(i-1,w*n/100),
+if mod(i,n/100) <= mod(i-1,n/100),
     fwrite(1,sprintf('\b\b\b'));
     fwrite(1,sprintf('%02d%%', round(100*i/n)));
 end

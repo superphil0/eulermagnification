@@ -1,0 +1,35 @@
+
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="helpwin.css">
+      <title>MATLAB File Help: eulermag</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <div class="title">lpiir</div>
+      <div class="helptext"><pre><!--helptext -->  Apply Eulerian motion magnification using the following filters
+  Spatial Filtering: Laplacian pyramid
+  Temporal Filtering: IIR (Infinite Impulse Response) filter
+  Two images are updated using the low and high cutoff parameters and
+   subtracted to filter the frame sequence according to these specified
+   frequency bands. I.e., bandpass filtering is achieved by subtracting 
+   two lowpass filters of different thresholds.
+ 
+  The temporal filtering is applied to the whole Laplacian pyramid thereby
+  magnifying signals in different spatial sizes.
+ 
+  Input:
+    framesIn            frames of the input video (in YIC color space)
+    alpha               % Amplification factor
+    lambdaC             % Spatial frequency cutoff
+    lowCutoff           % Temporal frequency low cutoff
+    highCutoff          % Temporal frequency high cutoff
+    chromAtt            % Chromatic attentuation
+    exaggerationFactor  % Motion exaggeration factor
+ 
+  Output:
+    framesOut           motion magnified frames</pre></div><!--after help -->
+   </body>
+</html>

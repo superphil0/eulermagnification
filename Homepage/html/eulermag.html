@@ -1,0 +1,238 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>eulermag</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-08"><meta name="DC.source" content="eulermag.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Apply eulerian motion magnification</a></li><li><a href="#4">Write output</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> eulermag ( filein, fileout, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor, maxframes )
+</pre><pre class="codeinput"><span class="comment">% Reads the input video file, awaits user input for magnification area</span>
+<span class="comment">% selection, then converts the frames to YIC color space applies</span>
+<span class="comment">% motion magnification and writes the output video.</span>
+<span class="comment">%</span>
+<span class="comment">% Input:</span>
+<span class="comment">%   filein              Input video file</span>
+<span class="comment">%   fileout             Output file name</span>
+<span class="comment">%   alpha               see lpiir.m</span>
+<span class="comment">%   lambdaC             see lpiir.m</span>
+<span class="comment">%   lowCutoff           see lpiir.m</span>
+<span class="comment">%   highCutoff          see lpiir.m</span>
+<span class="comment">%   chromAtt            see lpiir.m</span>
+<span class="comment">%   exaggerationFactor  see lpiir.m</span>
+<span class="comment">%   maxframes           Maximum number of frames to be used or 0 if all</span>
+
+<span class="comment">% Open video reader</span>
+vidIn = VideoReader(filein);
+startIndex = 1;
+
+<span class="comment">% Set endIndex</span>
+<span class="keyword">if</span> (maxframes &gt; 0)
+    endIndex = maxframes;
+<span class="keyword">else</span>
+    endIndex = vidIn.NumberOfFrames;
+<span class="keyword">end</span>
+
+<span class="comment">% Video file properties</span>
+nChannels = 3;
+temp = struct(<span class="string">'cdata'</span>, <span class="keyword">...</span>
+		  zeros(vidIn.Height, vidIn.Width, nChannels, <span class="string">'uint8'</span>), <span class="keyword">...</span>
+		  <span class="string">'colormap'</span>, []);
+
+<span class="comment">% Frame storage</span>
+frames = zeros(vidIn.Height, vidIn.Width, nChannels, endIndex);
+
+<span class="comment">% Read and show first frame</span>
+temp.cdata = read(vidIn, 1);
+[rgbframe,~] = frame2im(temp);
+imshow(rgbframe)
+
+<span class="comment">% Get rectangular area for motion magnification</span>
+rect = uint16(getrect);
+
+<span class="comment">% Read and convert all frames to YIC color space</span>
+<span class="keyword">for</span> i=startIndex:endIndex
+    <span class="comment">% Read frame</span>
+    temp.cdata = read(vidIn, i);
+    [rgbframe,~] = frame2im(temp);
+    rgbframe = im2double(rgbframe);
+    <span class="comment">% Convert to YIC</span>
+    frame = rgb2ntsc(rgbframe);
+    frames(:,:,:,i) = frame;
+<span class="keyword">end</span>
+</pre><h2>Apply eulerian motion magnification<a name="3"></a></h2><p>with temporal IIR filter and spatial Laplacian pyramid on the user-defined magnification area</p><pre class="codeinput">magnifyArea = frames(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:,:);
+framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor);
+</pre><h2>Write output<a name="4"></a></h2><pre class="codeinput">vidOut = VideoWriter(fileout);<span class="comment">%, 'MPEG-4');</span>
+vidOut.FrameRate = vidIn.FrameRate;
+
+open(vidOut)
+
+<span class="comment">% Convert each frame back to RGB and write to file</span>
+<span class="keyword">for</span> i=startIndex:endIndex
+    <span class="comment">% Convert YIC to RGB color space</span>
+    rgbframe = ntsc2rgb(framesOut(:,:,:,i));
+    progmeter(i,endIndex);
+    <span class="comment">% Clamp values to [0,1]</span>
+    rgbframe(rgbframe &lt; 0) = 0;
+    rgbframe(rgbframe &gt; 1) = 1;
+    <span class="comment">% Add magnification area output back to whole frame</span>
+    fr = ntsc2rgb(frames(:,:,:,i));
+    fr(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:)=rgbframe;
+    rgbframe = fr;
+    writeVideo(vidOut, rgbframe);
+<span class="keyword">end</span>
+close(vidOut);
+disp(<span class="string">'wrote video file'</span>);
+close <span class="string">all</span>;
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function eulermag ( filein, fileout, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor, maxframes ) 
+% Reads the input video file, awaits user input for magnification area 
+% selection, then converts the frames to YIC color space applies
+% motion magnification and writes the output video.
+%
+% Input:
+%   filein              Input video file
+%   fileout             Output file name
+%   alpha               see lpiir.m
+%   lambdaC             see lpiir.m
+%   lowCutoff           see lpiir.m
+%   highCutoff          see lpiir.m
+%   chromAtt            see lpiir.m
+%   exaggerationFactor  see lpiir.m
+%   maxframes           Maximum number of frames to be used or 0 if all
+
+% Open video reader
+vidIn = VideoReader(filein);
+startIndex = 1;
+
+% Set endIndex
+if (maxframes > 0)
+    endIndex = maxframes;
+else
+    endIndex = vidIn.NumberOfFrames;
+end
+
+% Video file properties
+nChannels = 3;
+temp = struct('cdata', ...
+		  zeros(vidIn.Height, vidIn.Width, nChannels, 'uint8'), ...
+		  'colormap', []);
+
+% Frame storage
+frames = zeros(vidIn.Height, vidIn.Width, nChannels, endIndex);
+
+% Read and show first frame
+temp.cdata = read(vidIn, 1);
+[rgbframe,~] = frame2im(temp);
+imshow(rgbframe)
+
+% Get rectangular area for motion magnification
+rect = uint16(getrect);
+
+% Read and convert all frames to YIC color space
+for i=startIndex:endIndex
+    % Read frame
+    temp.cdata = read(vidIn, i);
+    [rgbframe,~] = frame2im(temp);
+    rgbframe = im2double(rgbframe);
+    % Convert to YIC
+    frame = rgb2ntsc(rgbframe);
+    frames(:,:,:,i) = frame;
+end
+
+%% Apply eulerian motion magnification
+% with temporal IIR filter and spatial Laplacian pyramid
+% on the user-defined magnification area
+
+magnifyArea = frames(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:,:);
+framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor);
+
+%% Write output
+vidOut = VideoWriter(fileout);%, 'MPEG-4');
+vidOut.FrameRate = vidIn.FrameRate;
+
+open(vidOut)
+
+% Convert each frame back to RGB and write to file
+for i=startIndex:endIndex
+    % Convert YIC to RGB color space
+    rgbframe = ntsc2rgb(framesOut(:,:,:,i));
+    progmeter(i,endIndex);
+    % Clamp values to [0,1]
+    rgbframe(rgbframe < 0) = 0;
+    rgbframe(rgbframe > 1) = 1;
+    % Add magnification area output back to whole frame
+    fr = ntsc2rgb(frames(:,:,:,i));
+    fr(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:)=rgbframe;
+    rgbframe = fr;
+    writeVideo(vidOut, rgbframe);
+end
+close(vidOut);
+disp('wrote video file');
+close all;
+
+end
+##### SOURCE END #####
+--></body></html>

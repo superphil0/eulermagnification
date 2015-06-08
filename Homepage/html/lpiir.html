@@ -1,0 +1,267 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>lpiir</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-08"><meta name="DC.source" content="lpiir.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [ framesOut ] = lpiir( framesIn, alpha, lambdaC, lowCutoff, highCutoff, chromAtt,exagerationFactor )
+<span class="comment">% Apply Eulerian motion magnification using the following filters</span>
+<span class="comment">% Spatial Filtering: Laplacian pyramid</span>
+<span class="comment">% Temporal Filtering: IIR (Infinite Impulse Response) filter</span>
+<span class="comment">% Two images are updated using the low and high cutoff parameters and</span>
+<span class="comment">%  subtracted to filter the frame sequence according to these specified</span>
+<span class="comment">%  frequency bands. I.e., bandpass filtering is achieved by subtracting</span>
+<span class="comment">%  two lowpass filters of different thresholds.</span>
+<span class="comment">%</span>
+<span class="comment">% The temporal filtering is applied to the whole Laplacian pyramid thereby</span>
+<span class="comment">% magnifying signals in different spatial sizes.</span>
+<span class="comment">%</span>
+<span class="comment">% Input:</span>
+<span class="comment">%   framesIn            frames of the input video (in YIC color space)</span>
+<span class="comment">%   alpha               % Amplification factor</span>
+<span class="comment">%   lambdaC             % Spatial frequency cutoff</span>
+<span class="comment">%   lowCutoff           % Temporal frequency low cutoff</span>
+<span class="comment">%   highCutoff          % Temporal frequency high cutoff</span>
+<span class="comment">%   chromAtt            % Chromatic attentuation</span>
+<span class="comment">%   exaggerationFactor  % Motion exaggeration factor</span>
+<span class="comment">%</span>
+<span class="comment">% Output:</span>
+<span class="comment">%   framesOut           motion magnified frames</span>
+
+<span class="comment">% Prepare output</span>
+numFrames = size(framesIn,4);
+framesOut = zeros(size(framesIn));
+
+<span class="comment">% Prepare IIR filters using the first frame</span>
+<span class="keyword">for</span> j = 1:3
+    <span class="comment">% spatial filtering</span>
+    [pyramid(:,:,j), sizes] = buildPyramid(framesIn(:,:,j,1));
+<span class="keyword">end</span>
+lowpass1 = pyramid;
+lowpass2 = pyramid;
+
+<span class="comment">% Apply filter on all consecutive frames</span>
+<span class="keyword">for</span> i = 2:numFrames
+    progmeter(i,numFrames);
+    frameIn = framesIn(:,:,:,i);
+
+    <span class="comment">% spatial filtering (each color separately)</span>
+    <span class="keyword">for</span> j = 1:3
+        [pyramid(:,:,j), sizes] = buildPyramid(frameIn(:,:,j));
+    <span class="keyword">end</span>
+
+    <span class="comment">% temporal filtering with IIR filters</span>
+    lowpass1 = (1-lowCutoff) * lowpass1 + lowCutoff * pyramid; <span class="comment">% low pass filter with low cutoff</span>
+    lowpass2 = (1-highCutoff) * lowpass2 + highCutoff * pyramid; <span class="comment">% low pass filter with high cutoff</span>
+    filtered = lowpass1 - lowpass2; <span class="comment">% bandpass filtered signal</span>
+
+    <span class="comment">% term used in modifiyng alpha according to spatial frequencies</span>
+    <span class="comment">% to avoid incorrectly amplfified motions (see Paper</span>
+    delta = lambdaC/8/(1+alpha);
+
+    <span class="comment">% representative wavelength for the lowest spatial frequency band</span>
+    <span class="comment">% (lowest pyramid level)</span>
+    lambda = (sizes(1,1)^2 + sizes(2,1)^2).^0.5/3;
+
+    <span class="comment">% iterate through levels and amplify motion</span>
+    pyramidLevels = size(sizes,2);
+    ypositions = cumsum([1, sizes(1,:)]);
+    <span class="keyword">for</span> j = 1:pyramidLevels <span class="comment">%bottom up</span>
+        <span class="comment">% compute modified alpha for this level</span>
+        currAlpha = lambda/delta/8 - 1;
+        currAlpha = currAlpha*exagerationFactor; <span class="comment">%exaggerate motion for visualisation</span>
+
+        <span class="comment">% do not apply to bottom or top levels</span>
+        <span class="keyword">if</span> i &lt; 2 || i &gt; 7
+            <span class="keyword">continue</span>
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> (currAlpha &gt; alpha)
+            filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:) = alpha*filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:);
+        <span class="keyword">else</span> <span class="comment">% spatial frequency is beyond the lambdaC cutoff --&gt; use attenuated alpha</span>
+
+            <span class="comment">%if currAlpha &lt; alpha %force alpha = 0 for human pulse visualisation</span>
+            <span class="comment">%    currAlpha = 0;</span>
+            <span class="comment">%end</span>
+            filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:) = currAlpha*filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:);
+        <span class="keyword">end</span>
+
+        <span class="comment">%half representative wavelength for half-sized next pyramid level</span>
+        lambda = lambda/2;
+    <span class="keyword">end</span>
+
+    frameOut = zeros(size(frameIn));
+
+    <span class="comment">%reconstruct YIC image from the pyramid and apply chromatic attenuation</span>
+    <span class="comment">%to chroma channels</span>
+    frameOut(:,:,1) = reconstructPyramid(filtered(:,:,1),sizes);
+    frameOut(:,:,2) = reconstructPyramid(filtered(:,:,2),sizes) * chromAtt; <span class="comment">%chrom. attenuation</span>
+    frameOut(:,:,3) = reconstructPyramid(filtered(:,:,3),sizes) * chromAtt; <span class="comment">%chrom. attenuation</span>
+
+    <span class="comment">% add amplified motion to input</span>
+    framesOut(:,:,:,i) = frameOut + frameIn;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [ framesOut ] = lpiir( framesIn, alpha, lambdaC, lowCutoff, highCutoff, chromAtt,exagerationFactor )
+% Apply Eulerian motion magnification using the following filters
+% Spatial Filtering: Laplacian pyramid
+% Temporal Filtering: IIR (Infinite Impulse Response) filter
+% Two images are updated using the low and high cutoff parameters and
+%  subtracted to filter the frame sequence according to these specified
+%  frequency bands. I.e., bandpass filtering is achieved by subtracting 
+%  two lowpass filters of different thresholds.
+%
+% The temporal filtering is applied to the whole Laplacian pyramid thereby
+% magnifying signals in different spatial sizes.
+%
+% Input:
+%   framesIn            frames of the input video (in YIC color space)
+%   alpha               % Amplification factor
+%   lambdaC             % Spatial frequency cutoff
+%   lowCutoff           % Temporal frequency low cutoff
+%   highCutoff          % Temporal frequency high cutoff
+%   chromAtt            % Chromatic attentuation
+%   exaggerationFactor  % Motion exaggeration factor
+%
+% Output:
+%   framesOut           motion magnified frames
+
+% Prepare output
+numFrames = size(framesIn,4);
+framesOut = zeros(size(framesIn));
+
+% Prepare IIR filters using the first frame
+for j = 1:3
+    % spatial filtering
+    [pyramid(:,:,j), sizes] = buildPyramid(framesIn(:,:,j,1));
+end
+lowpass1 = pyramid;
+lowpass2 = pyramid;
+
+% Apply filter on all consecutive frames
+for i = 2:numFrames
+    progmeter(i,numFrames);
+    frameIn = framesIn(:,:,:,i);
+    
+    % spatial filtering (each color separately)
+    for j = 1:3
+        [pyramid(:,:,j), sizes] = buildPyramid(frameIn(:,:,j));
+    end
+    
+    % temporal filtering with IIR filters
+    lowpass1 = (1-lowCutoff) * lowpass1 + lowCutoff * pyramid; % low pass filter with low cutoff
+    lowpass2 = (1-highCutoff) * lowpass2 + highCutoff * pyramid; % low pass filter with high cutoff
+    filtered = lowpass1 - lowpass2; % bandpass filtered signal
+    
+    % term used in modifiyng alpha according to spatial frequencies
+    % to avoid incorrectly amplfified motions (see Paper 
+    delta = lambdaC/8/(1+alpha);
+    
+    % representative wavelength for the lowest spatial frequency band
+    % (lowest pyramid level)
+    lambda = (sizes(1,1)^2 + sizes(2,1)^2).^0.5/3;
+    
+    % iterate through levels and amplify motion
+    pyramidLevels = size(sizes,2);
+    ypositions = cumsum([1, sizes(1,:)]);
+    for j = 1:pyramidLevels %bottom up
+        % compute modified alpha for this level
+        currAlpha = lambda/delta/8 - 1;
+        currAlpha = currAlpha*exagerationFactor; %exaggerate motion for visualisation
+        
+        % do not apply to bottom or top levels
+        if i < 2 || i > 7
+            continue
+        end
+        if (currAlpha > alpha)
+            filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:) = alpha*filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:);
+        else % spatial frequency is beyond the lambdaC cutoff REPLACE_WITH_DASH_DASH> use attenuated alpha
+            
+            %if currAlpha < alpha %force alpha = 0 for human pulse visualisation
+            %    currAlpha = 0;
+            %end
+            filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:) = currAlpha*filtered(ypositions(j):ypositions(j+1)-1, 1:sizes(2,j),:);
+        end
+        
+        %half representative wavelength for half-sized next pyramid level
+        lambda = lambda/2;
+    end
+    
+    frameOut = zeros(size(frameIn));
+
+    %reconstruct YIC image from the pyramid and apply chromatic attenuation
+    %to chroma channels
+    frameOut(:,:,1) = reconstructPyramid(filtered(:,:,1),sizes);
+    frameOut(:,:,2) = reconstructPyramid(filtered(:,:,2),sizes) * chromAtt; %chrom. attenuation
+    frameOut(:,:,3) = reconstructPyramid(filtered(:,:,3),sizes) * chromAtt; %chrom. attenuation
+    
+    % add amplified motion to input
+    framesOut(:,:,:,i) = frameOut + frameIn;    
+end
+
+
+
+##### SOURCE END #####
+--></body></html>

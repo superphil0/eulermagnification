@@ -3,9 +3,9 @@ function eulermag ( filein, fileout, alpha, lambdaC, lowCutoff, highCutoff, chro
 % selection, then converts the frames to YIC color space applies
 % motion magnification and writes the output video.
 %
-% Input Parameters
-%   filein              see lpiir.m
-%   fileout             see lpiir.m
+% Input:
+%   filein              Input video file
+%   fileout             Output file name
 %   alpha               see lpiir.m
 %   lambdaC             see lpiir.m
 %   lowCutoff           see lpiir.m
@@ -61,7 +61,7 @@ magnifyArea = frames(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:,:);
 framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor);
 
 %% Write output
-vidOut = VideoWriter(fileout);
+vidOut = VideoWriter(fileout);%, 'MPEG-4');
 vidOut.FrameRate = vidIn.FrameRate;
 
 open(vidOut)
@@ -82,5 +82,6 @@ for i=startIndex:endIndex
 end
 close(vidOut);
 disp('wrote video file');
+close all;
 
 end

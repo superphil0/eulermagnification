@@ -1,6 +1,6 @@
 
 %% Specify the parameters
-filein = 'guitar.mp4';   % Input file
+filein = 'orig_guitar.mp4';   % Input file
 fileout = 'out';        % Output file
 alpha = 80;             % Amplification factor
 lowCutoff = 0.1;        % Temporal frequency low cutoff

@@ -64,7 +64,7 @@ framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, 
 %% Write output
 disp('Writing to outputfile: ');
 
-vidOut = VideoWriter(fileout);%, 'MPEG-4');
+vidOut = VideoWriter(fileout, 'MPEG-4');
 vidOut.FrameRate = vidIn.FrameRate;
 
 open(vidOut)

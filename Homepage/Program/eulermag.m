@@ -41,7 +41,7 @@ imshow(rgbframe)
 
 % Get rectangular area for motion magnification
 rect = uint16(getrect);
-
+disp('Reading file...');
 % Read and convert all frames to YIC color space
 for i=startIndex:endIndex
     % Read frame
@@ -52,7 +52,8 @@ for i=startIndex:endIndex
     frame = rgb2ntsc(rgbframe);
     frames(:,:,:,i) = frame;
 end
-
+disp('Done reading file');
+disp('Start processing: ');
 %% Apply eulerian motion magnification
 % with temporal IIR filter and spatial Laplacian pyramid
 % on the user-defined magnification area
@@ -61,6 +62,8 @@ magnifyArea = frames(rect(2): rect(2)+rect(4),rect(1):rect(1)+rect(3),:,:);
 framesOut = lpiir(magnifyArea, alpha, lambdaC, lowCutoff, highCutoff, chromAtt, exaggerationFactor);
 
 %% Write output
+disp('Writing to outputfile: ');
+
 vidOut = VideoWriter(fileout);%, 'MPEG-4');
 vidOut.FrameRate = vidIn.FrameRate;
 
